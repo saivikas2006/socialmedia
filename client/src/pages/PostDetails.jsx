@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import Navbar from "../components/Navbar";
 import BottomBar from "../components/BottomBar";
 import api from "../services/api";
 import toast from "react-hot-toast";
@@ -16,7 +15,6 @@ export default function PostDetails() {
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
-
   const user = JSON.parse(localStorage.getItem("user"));
 
   const [post, setPost] = useState(null);
@@ -27,12 +25,18 @@ export default function PostDetails() {
     fetchPost();
   }, [id]);
 
-  // ================= Fetch Post =================
+  // ✅ Helper (handles both local + cloudinary)
+  const getImage = (img) => {
+    if (!img) return "";
+    return img.startsWith("http")
+      ? img
+      : `https://connecthub-backend-1kue.onrender.com${img}`;
+  };
 
+  // ================= Fetch Post =================
   const fetchPost = async () => {
     try {
       const res = await api.get(`/posts/${id}`);
-
       setPost(res.data.post);
     } catch (err) {
       console.log(err);
@@ -43,7 +47,6 @@ export default function PostDetails() {
   };
 
   // ================= Like =================
-
   const likePost = async () => {
     try {
       await api.put(
@@ -63,16 +66,13 @@ export default function PostDetails() {
   };
 
   // ================= Add Comment =================
-
   const addComment = async () => {
     if (!comment.trim()) return;
 
     try {
       await api.post(
         `/comments/${id}`,
-        {
-          comment,
-        },
+        { comment },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -81,9 +81,7 @@ export default function PostDetails() {
       );
 
       setComment("");
-
       fetchPost();
-
       toast.success("Comment added");
     } catch (err) {
       console.log(err);
@@ -92,32 +90,21 @@ export default function PostDetails() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex justify-center items-center text-white text-2xl">
-        Loading...
-      </div>
-    );
+    return <p className="text-white text-center mt-10">Loading...</p>;
   }
 
   if (!post) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex justify-center items-center text-white text-2xl">
-        Post not found
-      </div>
-    );
+    return <p className="text-white text-center mt-10">Post not found</p>;
   }
 
-  const liked =
-    post.likes?.includes(user?._id) ||
-    false;
-      return (
-    <>
-      <Navbar />
+  const liked = post.likes?.includes(user?._id) || false;
 
+  return (
+    <>
       <div className="min-h-screen bg-slate-950 text-white pb-24">
         <div className="max-w-5xl mx-auto p-6">
 
-          {/* Back Button */}
+          {/* Back */}
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-6"
@@ -128,10 +115,10 @@ export default function PostDetails() {
 
           <div className="bg-slate-900 rounded-2xl overflow-hidden shadow-xl border border-slate-800">
 
-            {/* Image */}
+            {/* ✅ POST IMAGE FIXED */}
             {post.image && (
               <img
-                src={`https://connecthub-backend-1kue.onrender.com${post.image}`}
+                src={getImage(post.image)}
                 alt="Post"
                 className="w-full max-h-[500px] object-cover"
               />
@@ -139,12 +126,11 @@ export default function PostDetails() {
 
             <div className="p-6">
 
-              {/* User */}
+              {/* USER */}
               <div className="flex items-center gap-4 mb-5">
-
                 {post.user?.profilePic ? (
                   <img
-                    src={`https://connecthub-backend-1kue.onrender.com${post.user.profilePic}`}
+                    src={getImage(post.user.profilePic)}
                     alt={post.user.name}
                     className="w-14 h-14 rounded-full object-cover"
                   />
@@ -158,22 +144,17 @@ export default function PostDetails() {
                   <h2 className="font-bold text-xl">
                     {post.user?.name}
                   </h2>
-
                   <p className="text-gray-400 text-sm">
                     {new Date(post.createdAt).toLocaleString()}
                   </p>
                 </div>
-
               </div>
 
-              {/* Caption */}
-              <p className="text-lg mb-6">
-                {post.caption}
-              </p>
+              {/* CAPTION */}
+              <p className="text-lg mb-6">{post.caption}</p>
 
-              {/* Like */}
+              {/* LIKE */}
               <div className="flex items-center gap-6 mb-8">
-
                 <button
                   onClick={likePost}
                   className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-5 py-2 rounded-lg transition"
@@ -186,7 +167,6 @@ export default function PostDetails() {
                         : "text-red-500"
                     }
                   />
-
                   {post.likes.length}
                 </button>
 
@@ -194,13 +174,10 @@ export default function PostDetails() {
                   <MessageCircle size={22} />
                   {post.comments.length}
                 </div>
-
               </div>
 
-              {/* Comments */}
-              <h3 className="text-xl font-bold mb-4">
-                Comments
-              </h3>
+              {/* COMMENTS */}
+              <h3 className="text-xl font-bold mb-4">Comments</h3>
 
               {post.comments.length === 0 ? (
                 <p className="text-gray-500 mb-6">
@@ -208,7 +185,6 @@ export default function PostDetails() {
                 </p>
               ) : (
                 <div className="space-y-4 mb-6">
-
                   {post.comments.map((c) => (
                     <div
                       key={c._id}
@@ -216,17 +192,16 @@ export default function PostDetails() {
                     >
                       <div className="flex items-center gap-3 mb-2">
 
+                        {/* ✅ COMMENT USER PIC FIXED */}
                         {c.user?.profilePic ? (
                           <img
-                            src={`https://connecthub-backend-1kue.onrender.com${c.user.profilePic}`}
+                            src={getImage(c.user.profilePic)}
                             alt={c.user.name}
                             className="w-10 h-10 rounded-full object-cover"
                           />
                         ) : (
                           <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center font-bold">
-                            {c.user?.name
-                              ?.charAt(0)
-                              .toUpperCase()}
+                            {c.user?.name?.charAt(0).toUpperCase()}
                           </div>
                         )}
 
@@ -234,35 +209,24 @@ export default function PostDetails() {
                           <p className="font-semibold">
                             {c.user?.name}
                           </p>
-
                           <p className="text-xs text-gray-500">
-                            {new Date(
-                              c.createdAt
-                            ).toLocaleString()}
+                            {new Date(c.createdAt).toLocaleString()}
                           </p>
                         </div>
-
                       </div>
 
-                      <p className="ml-13">
-                        {c.comment}
-                      </p>
-
+                      <p className="ml-13">{c.comment}</p>
                     </div>
                   ))}
-
                 </div>
               )}
 
-              {/* Add Comment */}
+              {/* ADD COMMENT */}
               <div className="flex gap-3">
-
                 <input
                   type="text"
                   value={comment}
-                  onChange={(e) =>
-                    setComment(e.target.value)
-                  }
+                  onChange={(e) => setComment(e.target.value)}
                   placeholder="Write a comment..."
                   className="flex-1 bg-slate-800 rounded-xl px-4 py-3 outline-none"
                 />
@@ -273,13 +237,10 @@ export default function PostDetails() {
                 >
                   <Send size={20} />
                 </button>
-
               </div>
 
             </div>
-
           </div>
-
         </div>
       </div>
 
