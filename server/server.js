@@ -22,15 +22,15 @@ const app = express();
 const server = http.createServer(app);
 
 // ==================================================
-// ✅ CORS CONFIG (FIXED)
+// ✅ FIXED CORS (IMPORTANT)
 // ==================================================
 const allowedOrigins = [
-  "http://localhost:5173", // local frontend
-  "https://connecthub-tz3s.onrender.com", // deployed frontend
+  "http://localhost:5173",
+  "https://connecthub-tz3s.onrender.com",
 ];
 
 // ==================================================
-// Socket.IO
+// Socket.IO Setup
 // ==================================================
 const io = new Server(server, {
   cors: {
@@ -124,21 +124,18 @@ io.on("connection", (socket) => {
   });
 
   // Stop Typing
-  socket.on(
-    "stopTyping",
-    ({ senderId, receiverId }) => {
-      const receiver = onlineUsers.find(
-        (user) => user.userId === receiverId
-      );
+  socket.on("stopTyping", ({ senderId, receiverId }) => {
+    const receiver = onlineUsers.find(
+      (user) => user.userId === receiverId
+    );
 
-      if (receiver) {
-        io.to(receiver.socketId).emit(
-          "stopTyping",
-          senderId
-        );
-      }
+    if (receiver) {
+      io.to(receiver.socketId).emit(
+        "stopTyping",
+        senderId
+      );
     }
-  );
+  });
 
   // Disconnect
   socket.on("disconnect", () => {
@@ -164,7 +161,7 @@ app.use(
 app.use(express.json());
 
 // ==================================================
-// Static Uploads
+// Static Uploads (IMAGE SERVING)
 // ==================================================
 app.use(
   "/uploads",
@@ -190,7 +187,7 @@ app.use("/api/conversations", conversationRoutes);
 app.use("/api/messages", messageRoutes);
 
 // ==================================================
-// MongoDB
+// MongoDB Connection
 // ==================================================
 mongoose
   .connect(process.env.MONGO_URI)
