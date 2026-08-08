@@ -15,42 +15,32 @@ import ChatRoom from "./pages/ChatRoom";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+   <BrowserRouter>
+  <Routes>
 
-        {/* Home */}
-        <Route path="/" element={<Home />} />
+    <Route path="/" element={<Home />} />
 
-        {/* Authentication */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+    <Route path="/login" element={<Login />} />
+    <Route path="/register" element={<Register />} />
 
-        {/* Search */}
-        <Route path="/search" element={<Search />} />
+    <Route path="/search" element={<Search />} />
 
-        {/* My Profile */}
-        <Route path="/profile" element={<Profile />} />
+    <Route path="/profile" element={<Profile />} />
+    <Route path="/profile/:id" element={<UserProfile />} />
 
-        {/* Other User Profile */}
-        <Route path="/users/:id" element={<UserProfile />} />
+    <Route path="/edit-profile" element={<EditProfile />} />
 
-        {/* Edit Profile */}
-        <Route path="/edit-profile" element={<EditProfile />} />
+    <Route path="/discover" element={<Discover />} />
 
-        {/* Discover */}
-        <Route path="/discover" element={<Discover />} />
+    <Route path="/notifications" element={<Notifications />} />
 
-        {/* Notifications */}
-        <Route path="/notifications" element={<Notifications />} />
+    <Route path="/posts/:id" element={<PostDetails />} />
 
-        {/* Post Details */}
-        <Route path="/posts/:id" element={<PostDetails />} />
-        {/* Chat */}
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/chat/:id" element={<ChatRoom />} />
+    <Route path="/chat" element={<Chat />} />
+    <Route path="/chat/:id" element={<ChatRoom />} />
 
-      </Routes>
-    </BrowserRouter>
+  </Routes>
+</BrowserRouter>
   );
 }
 
