@@ -15,7 +15,7 @@ export default function PostDetails() {
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user")) || {};
 
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -25,7 +25,7 @@ export default function PostDetails() {
     fetchPost();
   }, [id]);
 
-  // ✅ Helper (handles both local + cloudinary)
+  // ✅ Image helper
   const getImage = (img) => {
     if (!img) return "";
     return img.startsWith("http")
@@ -33,13 +33,14 @@ export default function PostDetails() {
       : `https://connecthub-backend-1kue.onrender.com${img}`;
   };
 
-  // ================= Fetch Post =================
+  // ================= Fetch =================
   const fetchPost = async () => {
     try {
       const res = await api.get(`/posts/${id}`);
-      setPost(res.data.post);
+      setPost(res.data.post || null);
     } catch (err) {
       console.log(err);
+      setPost(null);
       toast.error("Post not found");
     } finally {
       setLoading(false);
@@ -48,25 +49,25 @@ export default function PostDetails() {
 
   // ================= Like =================
   const likePost = async () => {
+    if (!token) return toast.error("Login required");
+
     try {
       await api.put(
         `/posts/${id}/like`,
         {},
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-
       fetchPost();
     } catch (err) {
       console.log(err);
     }
   };
 
-  // ================= Add Comment =================
+  // ================= Comment =================
   const addComment = async () => {
+    if (!token) return toast.error("Login required");
     if (!comment.trim()) return;
 
     try {
@@ -74,9 +75,7 @@ export default function PostDetails() {
         `/comments/${id}`,
         { comment },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -89,15 +88,25 @@ export default function PostDetails() {
     }
   };
 
+  // ================= STATES =================
   if (loading) {
-    return <p className="text-white text-center mt-10">Loading...</p>;
+    return (
+      <div className="text-white text-center mt-20">
+        Loading...
+      </div>
+    );
   }
 
   if (!post) {
-    return <p className="text-white text-center mt-10">Post not found</p>;
+    return (
+      <div className="text-white text-center mt-20">
+        Post not found or deleted ❌
+      </div>
+    );
   }
 
-  const liked = post.likes?.includes(user?._id) || false;
+  const liked =
+    post?.likes?.includes(user?._id) || false;
 
   return (
     <>
@@ -115,7 +124,7 @@ export default function PostDetails() {
 
           <div className="bg-slate-900 rounded-2xl overflow-hidden shadow-xl border border-slate-800">
 
-            {/* ✅ POST IMAGE FIXED */}
+            {/* IMAGE */}
             {post.image && (
               <img
                 src={getImage(post.image)}
@@ -131,7 +140,7 @@ export default function PostDetails() {
                 {post.user?.profilePic ? (
                   <img
                     src={getImage(post.user.profilePic)}
-                    alt={post.user.name}
+                    alt={post.user?.name}
                     className="w-14 h-14 rounded-full object-cover"
                   />
                 ) : (
@@ -142,16 +151,21 @@ export default function PostDetails() {
 
                 <div>
                   <h2 className="font-bold text-xl">
-                    {post.user?.name}
+                    {post.user?.name || "User"}
                   </h2>
+
                   <p className="text-gray-400 text-sm">
-                    {new Date(post.createdAt).toLocaleString()}
+                    {post.createdAt
+                      ? new Date(post.createdAt).toLocaleString()
+                      : ""}
                   </p>
                 </div>
               </div>
 
               {/* CAPTION */}
-              <p className="text-lg mb-6">{post.caption}</p>
+              <p className="text-lg mb-6">
+                {post.caption || ""}
+              </p>
 
               {/* LIKE */}
               <div className="flex items-center gap-6 mb-8">
@@ -167,55 +181,61 @@ export default function PostDetails() {
                         : "text-red-500"
                     }
                   />
-                  {post.likes.length}
+                  {post?.likes?.length || 0}
                 </button>
 
                 <div className="flex items-center gap-2 text-gray-300">
                   <MessageCircle size={22} />
-                  {post.comments.length}
+                  {post?.comments?.length || 0}
                 </div>
               </div>
 
               {/* COMMENTS */}
-              <h3 className="text-xl font-bold mb-4">Comments</h3>
+              <h3 className="text-xl font-bold mb-4">
+                Comments
+              </h3>
 
-              {post.comments.length === 0 ? (
+              {post?.comments?.length === 0 ? (
                 <p className="text-gray-500 mb-6">
                   No comments yet.
                 </p>
               ) : (
                 <div className="space-y-4 mb-6">
-                  {post.comments.map((c) => (
+                  {post?.comments?.map((c) => (
                     <div
-                      key={c._id}
+                      key={c?._id}
                       className="bg-slate-800 rounded-xl p-4"
                     >
                       <div className="flex items-center gap-3 mb-2">
 
-                        {/* ✅ COMMENT USER PIC FIXED */}
-                        {c.user?.profilePic ? (
+                        {c?.user?.profilePic ? (
                           <img
                             src={getImage(c.user.profilePic)}
-                            alt={c.user.name}
+                            alt={c.user?.name}
                             className="w-10 h-10 rounded-full object-cover"
                           />
                         ) : (
                           <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center font-bold">
-                            {c.user?.name?.charAt(0).toUpperCase()}
+                            {c?.user?.name?.charAt(0).toUpperCase()}
                           </div>
                         )}
 
                         <div>
                           <p className="font-semibold">
-                            {c.user?.name}
+                            {c?.user?.name || "User"}
                           </p>
+
                           <p className="text-xs text-gray-500">
-                            {new Date(c.createdAt).toLocaleString()}
+                            {c?.createdAt
+                              ? new Date(c.createdAt).toLocaleString()
+                              : ""}
                           </p>
                         </div>
                       </div>
 
-                      <p className="ml-13">{c.comment}</p>
+                      <p className="ml-13">
+                        {c?.comment}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -226,7 +246,9 @@ export default function PostDetails() {
                 <input
                   type="text"
                   value={comment}
-                  onChange={(e) => setComment(e.target.value)}
+                  onChange={(e) =>
+                    setComment(e.target.value)
+                  }
                   placeholder="Write a comment..."
                   className="flex-1 bg-slate-800 rounded-xl px-4 py-3 outline-none"
                 />
@@ -241,6 +263,7 @@ export default function PostDetails() {
 
             </div>
           </div>
+
         </div>
       </div>
 

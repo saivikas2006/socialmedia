@@ -15,11 +15,25 @@ export default function PostCard({ post, refreshPosts }) {
   const [loading, setLoading] = useState(false);
   const [openComments, setOpenComments] = useState(false);
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user =
+    JSON.parse(localStorage.getItem("user")) || {};
 
-  const isLiked = post.likes.some(
-    (id) => id.toString() === user?._id
-  );
+  // ❗ SAFETY FIRST
+  if (!post) return null;
+
+  // ✅ IMAGE FIX
+  const getImage = (img) => {
+    if (!img) return "";
+    return img.startsWith("http")
+      ? img
+      : `https://connecthub-backend-1kue.onrender.com${img}`;
+  };
+
+  // ✅ SAFE LIKE CHECK
+  const isLiked =
+    post?.likes?.some(
+      (id) => id?.toString() === user?._id
+    ) || false;
 
   const handleLike = async (e) => {
     e.stopPropagation();
@@ -52,60 +66,71 @@ export default function PostCard({ post, refreshPosts }) {
 
   return (
     <>
-      <div className="bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-lg mb-8">
+      <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-lg overflow-hidden mb-6">
 
-        {/* User */}
+        {/* USER */}
         <div
-          onClick={() => navigate(`/users/${post.user._id}`)}
+          onClick={() =>
+            post?.user?._id &&
+            navigate(`/users/${post.user._id}`)
+          }
           className="flex items-center gap-4 p-5 cursor-pointer hover:bg-slate-800 transition"
         >
-          {post.user.profilePic ? (
+          {post?.user?.profilePic ? (
             <img
-              src={`https://connecthub-backend-1kue.onrender.com${post.user.profilePic}`}
-              alt={post.user.name}
+              src={getImage(post.user.profilePic)}
+              alt={post.user?.name}
               className="w-14 h-14 rounded-full object-cover"
             />
           ) : (
             <div className="w-14 h-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-xl font-bold">
-              {post.user.name.charAt(0).toUpperCase()}
+              {post?.user?.name?.charAt(0) || "U"}
             </div>
           )}
 
           <div>
             <h2 className="font-semibold text-lg">
-              {post.user.name}
+              {post?.user?.name || "Unknown User"}
             </h2>
 
             <p className="text-sm text-gray-400">
-              {new Date(post.createdAt).toLocaleString()}
+              {post?.createdAt
+                ? new Date(
+                    post.createdAt
+                  ).toLocaleString()
+                : ""}
             </p>
           </div>
         </div>
 
-        {/* Caption */}
+        {/* CAPTION */}
         <div
-          onClick={() => navigate(`/posts/${post._id}`)}
+          onClick={() =>
+            navigate(`/posts/${post._id}`)
+          }
           className="px-5 pb-5 cursor-pointer"
         >
           <p className="text-gray-200 text-lg hover:text-white transition">
-            {post.caption}
+            {post?.caption || ""}
           </p>
         </div>
 
-        {/* Image */}
-       {post.image && (
-  <img
-    onClick={() => navigate(`/posts/${post._id}`)}
-    src={post.image}
-    alt="Post"
-    className="w-full object-cover max-h-[550px] cursor-pointer hover:opacity-95 transition"
-  />
-)}
+        {/* IMAGE */}
+        {post?.image && (
+          <img
+            onClick={() =>
+              navigate(`/posts/${post._id}`)
+            }
+            src={getImage(post.image)}
+            alt="Post"
+            className="w-full object-cover max-h-[550px] cursor-pointer hover:opacity-95 transition"
+          />
+        )}
 
-        {/* Footer */}
+        {/* FOOTER */}
         <div className="flex justify-between items-center px-5 py-4 border-t border-slate-800">
 
-          {/* Like */}
+          {/* LIKE */}
           <button
             onClick={handleLike}
             disabled={loading}
@@ -117,28 +142,30 @@ export default function PostCard({ post, refreshPosts }) {
           >
             {isLiked ? <FaHeart /> : <FaRegHeart />}
 
-            <span>{post.likes.length} Likes</span>
+            <span>
+              {post?.likes?.length || 0} Likes
+            </span>
           </button>
 
-          {/* Comments */}
+          {/* COMMENTS */}
           <button
-            onClick={() => navigate(`/posts/${post._id}`)}
+            onClick={() =>
+              navigate(`/posts/${post._id}`)
+            }
             className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition"
           >
             <FaRegCommentDots />
 
             <span>
-              {post.comments?.length || 0} Comments
+              {post?.comments?.length || 0} Comments
             </span>
           </button>
-
         </div>
-
       </div>
 
-      {/* Comments Modal (optional) */}
+      {/* COMMENTS MODAL */}
       <CommentsModal
-        postId={post._id}
+        postId={post?._id}
         isOpen={openComments}
         onClose={() => setOpenComments(false)}
       />

@@ -9,6 +9,7 @@ import BottomBar from "../components/BottomBar";
 export default function Home() {
   const [posts, setPosts] = useState([]);
   const [openModal, setOpenModal] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchPosts();
@@ -17,9 +18,17 @@ export default function Home() {
   const fetchPosts = async () => {
     try {
       const res = await api.get("/posts");
-      setPosts(res.data.posts);
+
+      // ✅ IMPORTANT FIX
+      const safePosts = (res.data.posts || []).filter(
+        (p) => p && p._id
+      );
+
+      setPosts(safePosts);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -48,8 +57,12 @@ export default function Home() {
             </button>
           </div>
 
-          {/* Posts */}
-          {posts.length === 0 ? (
+          {/* ✅ LOADING */}
+          {loading ? (
+            <div className="text-center text-gray-400">
+              Loading posts...
+            </div>
+          ) : posts.length === 0 ? (
             <div className="bg-slate-900 rounded-2xl p-10 text-center border border-slate-800 shadow-lg">
               <FaImage className="mx-auto text-6xl text-gray-500 mb-5" />
 
@@ -70,7 +83,6 @@ export default function Home() {
               />
             ))
           )}
-
         </div>
 
         <BottomBar onCreatePost={() => setOpenModal(true)} />
