@@ -1,6 +1,7 @@
 const Post = require("../models/Post");
 const Notification = require("../models/Notification");
 const cloudinary = require("../config/cloudinary");
+const streamifier = require("streamifier");
 
 // ================= Create Post =================
 exports.createPost = async (req, res) => {
@@ -16,12 +17,22 @@ exports.createPost = async (req, res) => {
 
     let image = "";
 
-    // ✅ Upload to Cloudinary
+    // ✅ Upload to Cloudinary using buffer
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "posts",
-      });
+      const streamUpload = () => {
+        return new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "posts" },
+            (error, result) => {
+              if (result) resolve(result);
+              else reject(error);
+            }
+          );
+          streamifier.createReadStream(req.file.buffer).pipe(stream);
+        });
+      };
 
+      const result = await streamUpload();
       image = result.secure_url;
     }
 
@@ -68,7 +79,7 @@ exports.getPosts = async (req, res) => {
   }
 };
 
-// ================= Get Logged-in User Posts =================
+// ================= Get My Posts =================
 exports.getMyPosts = async (req, res) => {
   try {
     const posts = await Post.find({ user: req.user.id })
@@ -160,7 +171,6 @@ exports.likePost = async (req, res) => {
 
     const userId = req.user.id;
 
-    // Unlike
     if (post.likes.includes(userId)) {
       post.likes.pull(userId);
       await post.save();
@@ -172,11 +182,9 @@ exports.likePost = async (req, res) => {
       });
     }
 
-    // Like
     post.likes.push(userId);
     await post.save();
 
-    // Notification
     if (post.user.toString() !== userId) {
       const alreadyExists = await Notification.findOne({
         sender: userId,
@@ -230,7 +238,7 @@ exports.deletePost = async (req, res) => {
       });
     }
 
-    // 🔥 OPTIONAL: Delete image from Cloudinary
+    // ✅ Delete from Cloudinary
     if (post.image) {
       const publicId = post.image.split("/").pop().split(".")[0];
       await cloudinary.uploader.destroy(`posts/${publicId}`);
