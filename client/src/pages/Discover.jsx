@@ -78,7 +78,7 @@ export default function Discover() {
 
                 {user.profilePic ? (
                   <img
-                    src={`http://localhost:5000${user.profilePic}`}
+                    src={`https://connecthub-backend-1kue.onrender.com${user.profilePic}`}
                     alt=""
                     className="w-24 h-24 rounded-full object-cover mx-auto"
                   />

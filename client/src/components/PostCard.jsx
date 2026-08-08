@@ -61,7 +61,7 @@ export default function PostCard({ post, refreshPosts }) {
         >
           {post.user.profilePic ? (
             <img
-              src={`http://localhost:5000${post.user.profilePic}`}
+              src={`https://connecthub-backend-1kue.onrender.com${post.user.profilePic}`}
               alt={post.user.name}
               className="w-14 h-14 rounded-full object-cover"
             />
@@ -96,7 +96,7 @@ export default function PostCard({ post, refreshPosts }) {
         {post.image && (
           <img
             onClick={() => navigate(`/posts/${post._id}`)}
-            src={`http://localhost:5000${post.image}`}
+            src={`https://connecthub-backend-1kue.onrender.com${post.image}`}
             alt="Post"
             className="w-full object-cover max-h-[550px] cursor-pointer hover:opacity-95 transition"
           />

@@ -128,7 +128,7 @@ export default function UserProfile() {
 
               {user.profilePic ? (
                 <img
-                  src={`http://localhost:5000${user.profilePic}`}
+                  src={`https://connecthub-backend-1kue.onrender.com${user.profilePic}`}
                   alt=""
                   className="w-28 h-28 rounded-full object-cover border-4 border-blue-500"
                 />
@@ -230,7 +230,7 @@ export default function UserProfile() {
                 >
                   {post.image && (
                     <img
-                      src={`http://localhost:5000${post.image}`}
+                      src={`https://connecthub-backend-1kue.onrender.com${post.image}`}
                       alt="Post"
                       className="w-full h-60 object-cover"
                     />

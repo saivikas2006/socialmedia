@@ -708,7 +708,7 @@ export default function ChatRoom() {
 
             {otherUser?.profilePic ? (
               <img
-                src={`http://localhost:5000${otherUser.profilePic}`}
+                src={`https://connecthub-backend-1kue.onrender.com${otherUser.profilePic}`}
                 alt={otherUser.name}
                 className="w-12 h-12 rounded-full object-cover border-2 border-blue-500"
               />
@@ -807,7 +807,7 @@ export default function ChatRoom() {
 
                         {message.image && (
                           <img
-                            src={`http://localhost:5000${message.image}`}
+                            src={`https://connecthub-backend-1kue.onrender.com${message.image}`}
                             alt="Message"
                             className="rounded-lg mb-2 max-h-64 object-cover"
                           />

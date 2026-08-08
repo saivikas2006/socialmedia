@@ -131,7 +131,7 @@ export default function PostDetails() {
             {/* Image */}
             {post.image && (
               <img
-                src={`http://localhost:5000${post.image}`}
+                src={`https://connecthub-backend-1kue.onrender.com${post.image}`}
                 alt="Post"
                 className="w-full max-h-[500px] object-cover"
               />
@@ -144,7 +144,7 @@ export default function PostDetails() {
 
                 {post.user?.profilePic ? (
                   <img
-                    src={`http://localhost:5000${post.user.profilePic}`}
+                    src={`https://connecthub-backend-1kue.onrender.com${post.user.profilePic}`}
                     alt={post.user.name}
                     className="w-14 h-14 rounded-full object-cover"
                   />
@@ -218,7 +218,7 @@ export default function PostDetails() {
 
                         {c.user?.profilePic ? (
                           <img
-                            src={`http://localhost:5000${c.user.profilePic}`}
+                            src={`https://connecthub-backend-1kue.onrender.com${c.user.profilePic}`}
                             alt={c.user.name}
                             className="w-10 h-10 rounded-full object-cover"
                           />

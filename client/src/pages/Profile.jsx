@@ -140,7 +140,7 @@ localStorage.setItem("user", JSON.stringify(res.data.user));
 
               {user.profilePic ? (
                 <img
-                  src={`http://localhost:5000${user.profilePic}`}
+                  src={`https://connecthub-backend-1kue.onrender.com${user.profilePic}`}
                   alt="Profile"
                   className="w-32 h-32 rounded-full object-cover border-4 border-blue-500"
                 />
@@ -225,7 +225,7 @@ localStorage.setItem("user", JSON.stringify(res.data.user));
                   >
                     {post.image && (
                       <img
-                        src={`http://localhost:5000${post.image}`}
+                        src={`https://connecthub-backend-1kue.onrender.com${post.image}`}
                         alt="Post"
                         className="w-full h-60 object-cover"
                       />
@@ -302,7 +302,7 @@ localStorage.setItem("user", JSON.stringify(res.data.user));
                       {person.profilePic ? (
 
                         <img
-                          src={`http://localhost:5000${person.profilePic}`}
+                          src={`https://connecthub-backend-1kue.onrender.com${person.profilePic}`}
                           alt={person.name}
                           className="w-16 h-16 rounded-full object-cover border-2 border-blue-500"
                         />

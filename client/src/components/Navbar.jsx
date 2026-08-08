@@ -156,7 +156,7 @@ export default function Navbar() {
                   {/* Profile Image */}
                   {person.profilePic ? (
                     <img
-                      src={`http://localhost:5000${person.profilePic}`}
+                      src={`https://connecthub-backend-1kue.onrender.com${person.profilePic}`}
                       alt={person.name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
@@ -234,7 +234,7 @@ export default function Navbar() {
 
             {user?.profilePic ? (
               <img
-                src={`http://localhost:5000${user.profilePic}`}
+                src={`https://connecthub-backend-1kue.onrender.com${user.profilePic}`}
                 alt="Profile"
                 className="w-11 h-11 rounded-full object-cover border-2 border-blue-500 hover:scale-110 transition"
               />

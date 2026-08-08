@@ -94,7 +94,7 @@ export default function Search() {
                 >
                   {user.profilePic ? (
                     <img
-                      src={`http://localhost:5000${user.profilePic}`}
+                      src={`https://connecthub-backend-1kue.onrender.com${user.profilePic}`}
                       alt=""
                       className="w-14 h-14 rounded-full object-cover"
                     />

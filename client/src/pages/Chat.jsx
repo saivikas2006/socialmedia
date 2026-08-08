@@ -71,7 +71,7 @@ export default function Chat() {
 
                     {otherUser?.profilePic ? (
                       <img
-                        src={`http://localhost:5000${otherUser.profilePic}`}
+                        src={`https://connecthub-backend-1kue.onrender.com${otherUser.profilePic}`}
                         alt={otherUser.name}
                         className="w-14 h-14 rounded-full object-cover"
                       />
