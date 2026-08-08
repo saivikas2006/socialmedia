@@ -30,8 +30,14 @@ export default function EditProfile() {
       setBio(res.data.user.bio);
 
       if (res.data.user.profilePic) {
-        setPreview(`https://connecthub-backend-1kue.onrender.com${res.data.user.profilePic}`);
-      }
+  const pic = res.data.user.profilePic;
+
+  setPreview(
+    pic.startsWith("http")
+      ? pic
+      : `https://connecthub-backend-1kue.onrender.com${pic}`
+  );
+}
     } catch (err) {
       console.log(err);
     }

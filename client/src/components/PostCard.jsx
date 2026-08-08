@@ -93,14 +93,14 @@ export default function PostCard({ post, refreshPosts }) {
         </div>
 
         {/* Image */}
-        {post.image && (
-          <img
-            onClick={() => navigate(`/posts/${post._id}`)}
-            src={`https://connecthub-backend-1kue.onrender.com${post.image}`}
-            alt="Post"
-            className="w-full object-cover max-h-[550px] cursor-pointer hover:opacity-95 transition"
-          />
-        )}
+       {post.image && (
+  <img
+    onClick={() => navigate(`/posts/${post._id}`)}
+    src={post.image}
+    alt="Post"
+    className="w-full object-cover max-h-[550px] cursor-pointer hover:opacity-95 transition"
+  />
+)}
 
         {/* Footer */}
         <div className="flex justify-between items-center px-5 py-4 border-t border-slate-800">
