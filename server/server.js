@@ -10,7 +10,6 @@ require("dotenv").config();
 // ==================================================
 // Import Routes
 // ==================================================
-
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const postRoutes = require("./routes/postRoutes");
@@ -23,181 +22,108 @@ const app = express();
 const server = http.createServer(app);
 
 // ==================================================
+// ✅ CORS CONFIG (FIXED)
+// ==================================================
+const allowedOrigins = [
+  "http://localhost:5173", // local frontend
+  "https://connecthub-tz3s.onrender.com", // deployed frontend
+];
+
+// ==================================================
 // Socket.IO
 // ==================================================
-
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
 // ==================================================
 // Online Users
 // ==================================================
-
 let onlineUsers = [];
 
 // ==================================================
 // Socket Connection
 // ==================================================
-
 io.on("connection", (socket) => {
   console.log("🟢 User Connected:", socket.id);
 
-  // ==================================================
   // Add User
-  // ==================================================
-
   socket.on("addUser", (userId) => {
     if (!userId) return;
 
-    // Remove old socket for this user
     onlineUsers = onlineUsers.filter(
       (user) => user.userId !== userId
     );
 
-    // Add current socket
     onlineUsers.push({
       userId,
       socketId: socket.id,
     });
 
-    // Send online users to everyone
     io.emit("onlineUsers", onlineUsers);
-
-    console.log("👤 Online Users:", onlineUsers);
   });
 
-  // ==================================================
   // Send Message
-  // ==================================================
-
   socket.on("sendMessage", (data) => {
-    try {
-      const receiver = onlineUsers.find(
-        (user) => user.userId === data.receiverId
-      );
+    const receiver = onlineUsers.find(
+      (user) => user.userId === data.receiverId
+    );
 
-      if (receiver) {
-        io.to(receiver.socketId).emit(
-          "receiveMessage",
-          data
-        );
-      }
-    } catch (error) {
-      console.log(
-        "❌ Socket message error:",
-        error.message
+    if (receiver) {
+      io.to(receiver.socketId).emit(
+        "receiveMessage",
+        data
       );
     }
   });
 
-  // ==================================================
-  // Message Delivered
-  // ==================================================
-
+  // Delivered
   socket.on("messageDelivered", (data) => {
-    try {
-      const sender = onlineUsers.find(
-        (user) => user.userId === data.senderId
-      );
+    const sender = onlineUsers.find(
+      (user) => user.userId === data.senderId
+    );
 
-      if (sender) {
-        io.to(sender.socketId).emit(
-          "messageDelivered",
-          {
-            messageId: data.messageId,
-            conversationId: data.conversationId,
-          }
-        );
-      }
-    } catch (error) {
-      console.log(
-        "❌ Delivered socket error:",
-        error.message
+    if (sender) {
+      io.to(sender.socketId).emit(
+        "messageDelivered",
+        data
       );
     }
   });
 
-  // ==================================================
-  // Message Seen
-  // ==================================================
-
+  // Seen
   socket.on("messageSeen", (data) => {
-    try {
-      const sender = onlineUsers.find(
-        (user) => user.userId === data.senderId
-      );
+    const sender = onlineUsers.find(
+      (user) => user.userId === data.senderId
+    );
 
-      if (sender) {
-        io.to(sender.socketId).emit(
-          "messageSeen",
-          {
-            messageId: data.messageId,
-            conversationId: data.conversationId,
-          }
-        );
-      }
-    } catch (error) {
-      console.log(
-        "❌ Seen socket error:",
-        error.message
+    if (sender) {
+      io.to(sender.socketId).emit(
+        "messageSeen",
+        data
       );
     }
   });
 
-  // ==================================================
-  // Conversation Seen
-  // ==================================================
-
-  socket.on("conversationSeen", (data) => {
-    try {
-      const sender = onlineUsers.find(
-        (user) => user.userId === data.senderId
-      );
-
-      if (sender) {
-        io.to(sender.socketId).emit(
-          "conversationSeen",
-          {
-            conversationId: data.conversationId,
-          }
-        );
-      }
-    } catch (error) {
-      console.log(
-        "❌ Conversation seen error:",
-        error.message
-      );
-    }
-  });
-
-  // ==================================================
   // Typing
-  // ==================================================
+  socket.on("typing", ({ senderId, receiverId }) => {
+    const receiver = onlineUsers.find(
+      (user) => user.userId === receiverId
+    );
 
-  socket.on(
-    "typing",
-    ({ senderId, receiverId }) => {
-      const receiver = onlineUsers.find(
-        (user) => user.userId === receiverId
+    if (receiver) {
+      io.to(receiver.socketId).emit(
+        "typing",
+        senderId
       );
-
-      if (receiver) {
-        io.to(receiver.socketId).emit(
-          "typing",
-          senderId
-        );
-      }
     }
-  );
+  });
 
-  // ==================================================
   // Stop Typing
-  // ==================================================
-
   socket.on(
     "stopTyping",
     ({ senderId, receiverId }) => {
@@ -214,103 +140,70 @@ io.on("connection", (socket) => {
     }
   );
 
-  // ==================================================
   // Disconnect
-  // ==================================================
-
   socket.on("disconnect", () => {
     onlineUsers = onlineUsers.filter(
       (user) => user.socketId !== socket.id
     );
 
     io.emit("onlineUsers", onlineUsers);
-
-    console.log(
-      "🔴 User Disconnected:",
-      socket.id
-    );
+    console.log("🔴 User Disconnected:", socket.id);
   });
 });
 
 // ==================================================
 // Middleware
 // ==================================================
-
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: allowedOrigins,
+    credentials: true,
   })
 );
 
 app.use(express.json());
 
 // ==================================================
-// Uploads
+// Static Uploads
 // ==================================================
-
 app.use(
   "/uploads",
-  express.static(
-    path.join(__dirname, "uploads")
-  )
+  express.static(path.join(__dirname, "uploads"))
 );
 
 // ==================================================
 // Test Route
 // ==================================================
-
 app.get("/", (req, res) => {
   res.send("🚀 ConnectHub API is Running...");
 });
 
 // ==================================================
-// API Routes
+// Routes
 // ==================================================
-
 app.use("/api/auth", authRoutes);
-
 app.use("/api/users", userRoutes);
-
 app.use("/api/posts", postRoutes);
-
 app.use("/api/comments", commentRoutes);
-
 app.use("/api/notifications", notificationRoutes);
-
-app.use(
-  "/api/conversations",
-  conversationRoutes
-);
-
-app.use(
-  "/api/messages",
-  messageRoutes
-);
+app.use("/api/conversations", conversationRoutes);
+app.use("/api/messages", messageRoutes);
 
 // ==================================================
 // MongoDB
 // ==================================================
-
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("✅ MongoDB Connected");
-  })
-  .catch((err) => {
-    console.log(
-      "❌ MongoDB Error:",
-      err.message
-    );
-  });
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) =>
+    console.log("❌ MongoDB Error:", err.message)
+  );
 
 // ==================================================
 // Start Server
 // ==================================================
-
 const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, () => {
-  console.log(
-    `🚀 Server running on http://localhost:${PORT}`
-  );
+  console.log(`🚀 Server running on port ${PORT}`);
 });
