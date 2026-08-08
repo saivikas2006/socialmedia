@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import toast from "react-hot-toast";
-import { Trash2, Edit } from "lucide-react";
-import Navbar from "../components/Navbar";
+import { Trash2 } from "lucide-react";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -21,12 +20,13 @@ export default function Profile() {
     fetchUsers();
   }, []);
 
-  // ✅ IMAGE FIX
+  // ================= IMAGE FIX =================
   const getImage = (img) => {
-    if (!img) return "";
-    return img.startsWith("http")
-      ? img
-      : `https://connecthub-backend-1kue.onrender.com${img}`;
+    if (!img || img === "undefined") return "";
+
+    if (img.startsWith("http")) return img;
+
+    return `https://connecthub-backend-1kue.onrender.com${img}`;
   };
 
   // ================= PROFILE =================
@@ -103,6 +103,7 @@ export default function Profile() {
       );
 
       toast.success("User followed");
+
       fetchUsers();
       fetchProfile();
     } catch (err) {
@@ -124,7 +125,6 @@ export default function Profile() {
 
       toast.success("Post deleted");
 
-      // ✅ remove safely
       setPosts((prev) =>
         prev.filter((post) => post && post._id !== id)
       );
@@ -136,99 +136,148 @@ export default function Profile() {
 
   // ================= LOADING =================
   if (loading || !user) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex justify-center items-center text-white text-2xl">
-        Loading Profile...
-      </div>
-    );
+    return <p className="text-white p-10">Loading Profile...</p>;
   }
 
   return (
-    <>
-      <Navbar />
+    <div className="min-h-screen bg-slate-950 text-white p-6">
+      <div className="max-w-6xl mx-auto">
 
-      <div className="min-h-screen bg-slate-950 text-white p-6">
-        <div className="max-w-5xl mx-auto">
+        {/* ================= PROFILE ================= */}
+        <div className="bg-slate-900 rounded-2xl p-8 border border-slate-800">
+          <div className="flex flex-col md:flex-row items-center gap-8">
 
-          {/* PROFILE */}
-          <div className="bg-slate-900 rounded-2xl p-8 border border-slate-800">
-            <div className="flex flex-col md:flex-row items-center gap-8">
-
-              {user?.profilePic ? (
-                <img
-                  src={getImage(user.profilePic)}
-                  className="w-32 h-32 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-32 h-32 rounded-full bg-blue-500 flex items-center justify-center text-4xl">
-                  {user?.name?.charAt(0)}
-                </div>
-              )}
-
-              <div>
-                <h1 className="text-3xl font-bold">
-                  {user?.name}
-                </h1>
-
-                <p className="text-gray-400">
-                  {user?.email}
-                </p>
-
-                <div className="flex gap-6 mt-4">
-                  <span>{posts.length} Posts</span>
-                  <span>
-                    {user?.followers?.length || 0} Followers
-                  </span>
-                  <span>
-                    {user?.following?.length || 0} Following
-                  </span>
-                </div>
-
-                <button
-                  onClick={() => navigate("/edit-profile")}
-                  className="mt-4 bg-blue-600 px-4 py-2 rounded"
-                >
-                  Edit Profile
-                </button>
+            {/* PROFILE IMAGE FIX */}
+            {user?.profilePic && user.profilePic !== "undefined" ? (
+              <img
+                src={getImage(user.profilePic)}
+                className="w-32 h-32 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-32 h-32 rounded-full bg-blue-500 flex items-center justify-center text-4xl font-bold">
+                {user?.name?.charAt(0)?.toUpperCase() || "U"}
               </div>
+            )}
+
+            <div>
+              <h1 className="text-3xl font-bold">
+                {user?.name}
+              </h1>
+
+              <p className="text-gray-400">
+                {user?.email}
+              </p>
+
+              <div className="flex gap-6 mt-4">
+                <span>{posts.length} Posts</span>
+                <span>
+                  {user?.followers?.length || 0} Followers
+                </span>
+                <span>
+                  {user?.following?.length || 0} Following
+                </span>
+              </div>
+
+              <button
+                onClick={() => navigate("/edit-profile")}
+                className="mt-4 bg-blue-600 px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Edit Profile
+              </button>
             </div>
           </div>
+        </div>
 
-          {/* POSTS */}
-          <div className="mt-10 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts
-              .filter((post) => post) // ✅ FIX
-              .map((post) => (
-                <div key={post._id} className="bg-slate-900 rounded-xl">
+        {/* ================= POSTS ================= */}
+        <div className="mt-10 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {posts
+            .filter((post) => post)
+            .map((post) => (
+              <div key={post._id} className="bg-slate-900 rounded-xl">
 
-                  {post.image && (
-                    <img
-                      src={getImage(post.image)}
-                      className="w-full h-60 object-cover"
-                    />
-                  )}
+                {post.image && (
+                  <img
+                    src={getImage(post.image)}
+                    className="w-full h-60 object-cover"
+                  />
+                )}
 
-                  <div className="p-4">
-                    <p>{post.caption}</p>
+                <div className="p-4">
+                  <p>{post.caption}</p>
 
-                    <div className="flex justify-between mt-3">
-                      <span>
-                        ❤️ {post?.likes?.length || 0}
-                      </span>
+                  <div className="flex justify-between mt-3">
+                    <span>
+                      ❤️ {post?.likes?.length || 0}
+                    </span>
 
-                      <button
-                        onClick={() => deletePost(post._id)}
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => deletePost(post._id)}
+                    >
+                      <Trash2 size={18} />
+                    </button>
                   </div>
                 </div>
-              ))}
-          </div>
-
+              </div>
+            ))}
         </div>
+
+        {/* ================= DISCOVER PEOPLE ================= */}
+        <div className="mt-14">
+          <h2 className="text-2xl font-semibold mb-6">
+            Discover People
+          </h2>
+
+          {users.length === 0 ? (
+            <p className="text-gray-400">
+              No suggestions available
+            </p>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {users.map((person) => (
+                <div
+                  key={person._id}
+                  className="bg-slate-900 p-5 rounded-xl flex items-center justify-between border border-slate-800"
+                >
+                  <div
+                    className="flex items-center gap-4 cursor-pointer"
+                    onClick={() =>
+                      navigate(`/users/${person._id}`)
+                    }
+                  >
+                    {person.profilePic ? (
+                      <img
+                        src={getImage(person.profilePic)}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center">
+                        {person.name?.charAt(0)}
+                      </div>
+                    )}
+
+                    <div>
+                      <p className="font-medium">
+                        {person.name}
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        {person.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => followUser(person._id)}
+                    className="bg-blue-600 px-3 py-1 rounded text-sm hover:bg-blue-700"
+                  >
+                    Follow
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
       </div>
-    </>
+    </div>
   );
 }
